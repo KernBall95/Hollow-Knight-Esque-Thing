@@ -8,18 +8,13 @@ public class PlayerTakeDamage : MonoBehaviour {
     public float knockbackTime;
     public float invulnTime;
     public float alphaFlickerTime;
+    [HideInInspector]public bool isRagdoll;
 
-    [HideInInspector]
-    public bool isRagdoll;
-
-    PlayerHealthManager PHM;
-    Rigidbody2D rb;
-    SpriteRenderer sr;
-
-    Vector2 knockbackDirection;
-
-    bool isInvuln;
-    //bool alphaLow, alphaHigh;
+    private PlayerHealthManager PHM;
+    private Rigidbody2D rb;
+    private SpriteRenderer sr;
+    private Vector2 knockbackDirection;
+    private bool isInvuln;
 
 	void Start () {
         PHM = GetComponent<PlayerHealthManager>();
@@ -28,8 +23,6 @@ public class PlayerTakeDamage : MonoBehaviour {
 
         isRagdoll = false;
         isInvuln = false;
-       // alphaHigh = true;
-        //alphaLow = false;
 	}
 
     IEnumerator KnockbackPlayer()

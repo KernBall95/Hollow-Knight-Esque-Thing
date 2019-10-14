@@ -8,18 +8,6 @@ public class AttackHit : MonoBehaviour
     [HideInInspector] public EnemyManager eManager;
     [HideInInspector] public Rigidbody2D eRB;
 
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-       // hitEnemy = false;
-    }
-
     void OnTriggerEnter2D(Collider2D other)
     {
         if (other.gameObject.tag == "Enemy")

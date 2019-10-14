@@ -10,14 +10,16 @@ public class CameraFollow : MonoBehaviour {
     public float speed;
     public Collider2D boundingBox;
 
-    Vector3 newPos;
-    float minPos;   
-    float maxPos;
-    float halfHeight;
-    float halfWidth;
+    private Vector3 newPos;
+    private float minPos;   
+    private float maxPos;
+    private float halfHeight;
+    private float halfWidth;
 
     void Start()
     {
+        transform.position = target.transform.position;
+
         halfHeight = Camera.main.orthographicSize;
         halfWidth = Camera.main.aspect * halfHeight;
 
@@ -26,7 +28,7 @@ public class CameraFollow : MonoBehaviour {
         
     }
 
-	void Update () {
+	void FixedUpdate () {
         newPos = new Vector3(PlayerBase.Instance.transform.position.x, PlayerBase.Instance.transform.position.y + yOffset, distFromPlayer);
 
         if (newPos.x < minPos)

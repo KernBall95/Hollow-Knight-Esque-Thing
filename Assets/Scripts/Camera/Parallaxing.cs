@@ -8,9 +8,9 @@ public class Parallaxing : MonoBehaviour {
     public Transform sky;
     public float smoothing = 1f;
 
-    float[] parallaxScales;
-    Transform cam;
-    Vector3 previousCamPos;
+    private float[] parallaxScales;
+    private Transform cam;
+    private Vector3 previousCamPos;
 
     void Awake()
     {
@@ -27,7 +27,7 @@ public class Parallaxing : MonoBehaviour {
         }
 	}
 	
-	void Update () {
+	void FixedUpdate () {
         for (int i = 0; i < scenery.Length; i++)
         {
             float parallax = (previousCamPos.x - cam.position.x) * parallaxScales[i];

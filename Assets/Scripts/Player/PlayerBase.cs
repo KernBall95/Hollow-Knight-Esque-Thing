@@ -10,29 +10,27 @@ public class PlayerBase : MonoBehaviour {
     public float maxDashLength = 0.4f;
     public float maxDashCooldown = 0.75f;
     public bool isGrounded;
-    //public Collider2D weaponCollider;
-    // public GameObject attackEffect;
 
-    Rigidbody2D rb;
-    Animator anim;
-    float lessGravityTime;
-    float maxLessGravityTime = 0.4f;
-    float h;
-    public float currentDashCooldown = 0f;
-    float dashTimer;
-    bool isJumping;
-    bool hasDoubleJump = true;
-    bool doubleJumpUsed;
-    bool doubleJumpReady;
-    public bool jumpReady;
+    private Rigidbody2D rb;
+    private Animator anim;
+    private float lessGravityTime;
+    private float maxLessGravityTime = 0.4f;
+    private float h;
+    private float currentDashCooldown = 0f;
+    private float dashTimer;
+    private bool isJumping;
+    private bool hasDoubleJump = true;
+    private bool doubleJumpUsed;
+    private bool doubleJumpReady;
+    private bool jumpReady;
     [HideInInspector]public bool isDashing = false;
-    bool dashComplete;
-    public bool groundedSinceLastDash;
-    public bool isRagdoll;
-    bool movingRight = true;
-    Vector3 normalScale = new Vector3(0.1f, 0.1f, 1f);
-    Vector3 flippedScaleX = new Vector3(-0.1f, 0.1f, 1f);
-    RaycastHit2D hit;
+    private bool dashComplete;
+    private bool groundedSinceLastDash;
+    private bool isRagdoll;
+    private bool movingRight = true;
+    private Vector3 normalScale = new Vector3(0.1f, 0.1f, 1f);
+    private Vector3 flippedScaleX = new Vector3(-0.1f, 0.1f, 1f);
+    private RaycastHit2D hit;
 
     private static PlayerBase instance;
     public static PlayerBase Instance
@@ -50,7 +48,6 @@ public class PlayerBase : MonoBehaviour {
         rb = GetComponent<Rigidbody2D>();
         anim = GetComponent<Animator>();
         //hasDoubleJump = true;
-        //isDashing = false;
         jumpReady = true;      
         dashTimer = maxDashLength;
     }

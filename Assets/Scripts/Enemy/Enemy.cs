@@ -5,10 +5,9 @@ using UnityEngine;
 public class Enemy : MonoBehaviour {
     
     public int maxHealth;
-    public int currentHealth;
     public int attackDamage;
     public bool ignoresKnockback;
-    //[HideInInspector]
+    public int currentHealth;
     public bool isRagdoll;
 
     public void TakeDamage(int damage)

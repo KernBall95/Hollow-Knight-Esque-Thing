@@ -6,18 +6,14 @@ public class PlayerAttack : MonoBehaviour {
 
     public int damage;
     public float knockbackStrength;
-   
 
-    //private float effectTime = 0.2f;
-    private float attackCooldown = 0.4f;
+    private float attackCooldown = 0.45f;
     private float attackTime = 0.2f;
     private bool attackReady;
-    //private GameObject targetHit;
     private bool attackActive;
     private Animator anim;
     private SpriteRenderer attackEffect;
-
-    [SerializeField] private AttackHit aHit;
+    private AttackHit aHit;
 
 	void Start () {
         anim = GetComponent<Animator>();
@@ -70,12 +66,15 @@ public class PlayerAttack : MonoBehaviour {
 
     IEnumerator ApplyKnockback(Rigidbody2D eRB)
     {
+
         eRB.GetComponent<EnemyManager>().isRagdoll = true;
         Vector2 knockbackDirection = new Vector2(eRB.transform.position.x - transform.position.x, 0).normalized;
         knockbackDirection.y = 0.25f;
         eRB.AddRelativeForce(knockbackDirection * knockbackStrength, ForceMode2D.Impulse);
 
         yield return new WaitForSeconds(0.25f);
-        eRB.GetComponent<EnemyManager>().isRagdoll = false;
+        
+        if(eRB != null)
+            eRB.GetComponent<EnemyManager>().isRagdoll = false;
     }
 }

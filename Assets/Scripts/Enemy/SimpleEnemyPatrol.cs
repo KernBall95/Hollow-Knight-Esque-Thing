@@ -7,15 +7,15 @@ public class SimpleEnemyPatrol : MonoBehaviour {
     public float moveSpeed;
     public bool movingRight = true;
 
-    Rigidbody2D rb;
-    SpriteRenderer sr;
-    float distanceToTarget;
-    float directionX;
-    Vector3 direction;
-    bool followingPlayer;
-    EnemyManager EM;
-    public bool flipReady;
-    RaycastHit2D hit;
+    private Rigidbody2D rb;
+    private SpriteRenderer sr;
+    private float distanceToTarget;
+    private float directionX;
+    private Vector3 direction;
+    private bool followingPlayer;
+    private EnemyManager EM;
+    private bool flipReady;
+    private RaycastHit2D hit;
 
     void Start () {
         rb = GetComponent<Rigidbody2D>();

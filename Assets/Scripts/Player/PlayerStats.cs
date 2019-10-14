@@ -4,8 +4,6 @@ using UnityEngine;
 
 public class PlayerStats : MonoBehaviour {
 
-    //[HideInInspector]
     public int currentHealth;
-
     public int maxHealth;
 }
