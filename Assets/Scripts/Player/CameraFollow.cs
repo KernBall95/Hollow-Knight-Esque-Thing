@@ -27,12 +27,12 @@ public class CameraFollow : MonoBehaviour {
     }
 
 	void Update () {
-        newPos = new Vector3(target.position.x, target.position.y + yOffset, distFromPlayer);
+        newPos = new Vector3(PlayerBase.Instance.transform.position.x, PlayerBase.Instance.transform.position.y + yOffset, distFromPlayer);
 
         if (newPos.x < minPos)
-            newPos = new Vector3(minPos, target.position.y + yOffset, distFromPlayer);
+            newPos = new Vector3(minPos, PlayerBase.Instance.transform.position.y + yOffset, distFromPlayer);
         else if(newPos.x > maxPos)
-            newPos = new Vector3(maxPos, target.position.y + yOffset, distFromPlayer);
+            newPos = new Vector3(maxPos, PlayerBase.Instance.transform.position.y + yOffset, distFromPlayer);
             
 
         transform.position = Vector3.Slerp(transform.position, newPos, speed * Time.deltaTime);

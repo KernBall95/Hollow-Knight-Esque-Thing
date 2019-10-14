@@ -6,45 +6,66 @@ public class PlayerAttack : MonoBehaviour {
 
     public int damage;
     public float knockbackStrength;
-    public GameObject attackEffect;
+   
 
-    float effectTime = 0.2f;
-    float attackCooldown = 0.4f;
-    float attackTime = 0.1f;
-    bool attackReady;
-    GameObject targetHit;
-    bool attackActive;
+    //private float effectTime = 0.2f;
+    private float attackCooldown = 0.4f;
+    private float attackTime = 0.2f;
+    private bool attackReady;
+    //private GameObject targetHit;
+    private bool attackActive;
+    private Animator anim;
+    private SpriteRenderer attackEffect;
+
+    [SerializeField] private AttackHit aHit;
 
 	void Start () {
+        anim = GetComponent<Animator>();
+        aHit = GetComponentInChildren<AttackHit>();
+        attackEffect = aHit.GetComponent<SpriteRenderer>();
+
         attackReady = true;
         attackActive = false;
 	}
 	
 	void Update () {
-
-        if (Input.GetButtonDown("Attack") && attackReady)
+        if (Input.GetButtonDown("Attack") && attackReady && PlayerBase.Instance.isDashing == false)
+        {
             StartCoroutine(Attack());
+            anim.SetBool("Attacking", true);
+        }
+
+        if (aHit.hitEnemy && attackActive)
+        {
+            CauseDamage(aHit.eManager);
+            if (!aHit.eManager.ignoresKnockback)
+            {
+                Rigidbody2D enemyRB = aHit.eRB;
+                StartCoroutine(ApplyKnockback(enemyRB));
+            }
+            attackActive = false;
+        }           
     }
 
     IEnumerator Attack()
     {
         attackActive = true;
         attackReady = false;
-        
-        attackEffect.SetActive(true);
+        attackEffect.enabled = true;
 
+        //yield return new WaitForSeconds(attackTime);
+        
         yield return new WaitForSeconds(attackTime);
         attackActive = false;
-        yield return new WaitForSeconds(effectTime - attackTime);
-        attackEffect.SetActive(false);
-        yield return new WaitForSeconds(attackCooldown - attackTime - effectTime);
+        anim.SetBool("Attacking", false);
+        attackEffect.enabled = false;
+        yield return new WaitForSeconds(attackCooldown - attackTime);
         attackReady = true;
     }
 
-    void CauseDamage(GameObject target)
+    void CauseDamage(EnemyManager target)
     {
-        target.GetComponent<EnemyManager>().TakeDamage(damage);
-        
+        target.GetComponent<EnemyManager>().TakeDamage(damage);       
     }
 
     IEnumerator ApplyKnockback(Rigidbody2D eRB)
@@ -56,22 +77,5 @@ public class PlayerAttack : MonoBehaviour {
 
         yield return new WaitForSeconds(0.25f);
         eRB.GetComponent<EnemyManager>().isRagdoll = false;
-    }
-
-    void OnTriggerStay2D(Collider2D other)
-    {
-        if (other.tag == "Enemy" && attackActive)
-        {
-            CauseDamage(other.gameObject);
-
-            if (other.GetComponent<EnemyManager>().ignoresKnockback == false)
-            {
-                Rigidbody2D enemyRB = other.GetComponent<Rigidbody2D>();
-                StartCoroutine(ApplyKnockback(enemyRB));                
-            }
-                
-
-            attackActive = false;
-        }
     }
 }

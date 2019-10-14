@@ -6,7 +6,6 @@ public class SimpleEnemyPatrol : MonoBehaviour {
 
     public float moveSpeed;
     public bool movingRight = true;
-    public Transform target;
 
     Rigidbody2D rb;
     SpriteRenderer sr;
@@ -26,7 +25,7 @@ public class SimpleEnemyPatrol : MonoBehaviour {
 	}
 	
 	void FixedUpdate () {
-        distanceToTarget = Vector2.Distance(target.position, transform.position);
+        distanceToTarget = Vector2.Distance(PlayerBase.Instance.transform.position, transform.position);
 
         if (!EM.isRagdoll){
             if (distanceToTarget < 4f)
@@ -66,15 +65,15 @@ public class SimpleEnemyPatrol : MonoBehaviour {
 
     void MoveToPlayer()
     {
-        direction = new Vector3(target.position.x - transform.position.x, transform.position.y, transform.position.z).normalized;
+        direction = new Vector3(PlayerBase.Instance.transform.position.x - transform.position.x, transform.position.y, transform.position.z).normalized;
         direction.y = 0;
-        if (target.position.x > transform.position.x)
+        if (PlayerBase.Instance.transform.position.x > transform.position.x)
         {
             sr.flipX = false;
             movingRight = true;
 
         }           
-        else if (target.position.x < transform.position.x)
+        else if (PlayerBase.Instance.transform.position.x < transform.position.x)
         {
             sr.flipX = true;
             movingRight = false;

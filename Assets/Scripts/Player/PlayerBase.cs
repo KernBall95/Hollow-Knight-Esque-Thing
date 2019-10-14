@@ -2,16 +2,16 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class PlayerMove : MonoBehaviour {
+public class PlayerBase : MonoBehaviour {
 
     public float speed;
     public float jumpSpeed;
     public float dashSpeed;
     public float maxDashLength = 0.4f;
     public float maxDashCooldown = 0.75f;
-    public bool isGrounded;   
+    public bool isGrounded;
     //public Collider2D weaponCollider;
-   // public GameObject attackEffect;
+    // public GameObject attackEffect;
 
     Rigidbody2D rb;
     Animator anim;
@@ -21,28 +21,38 @@ public class PlayerMove : MonoBehaviour {
     public float currentDashCooldown = 0f;
     float dashTimer;
     bool isJumping;
-    bool hasDoubleJump;
+    bool hasDoubleJump = true;
     bool doubleJumpUsed;
     bool doubleJumpReady;
     public bool jumpReady;
-    bool isDashing;
+    [HideInInspector]public bool isDashing = false;
     bool dashComplete;
     public bool groundedSinceLastDash;
     public bool isRagdoll;
-    //bool flipSpriteX;
-    bool movingRight;
+    bool movingRight = true;
     Vector3 normalScale = new Vector3(0.1f, 0.1f, 1f);
     Vector3 flippedScaleX = new Vector3(-0.1f, 0.1f, 1f);
-   // Vector3 flippedScaleY = new Vector3(0.1f, -0.1f, 1f);
     RaycastHit2D hit;
+
+    private static PlayerBase instance;
+    public static PlayerBase Instance
+    {
+        get
+        {
+            if (instance == null)
+                instance = GameObject.FindObjectOfType<PlayerBase>();
+            return instance;
+        }
+    }
 
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
         anim = GetComponent<Animator>();
-        hasDoubleJump = true;
-        isDashing = false;
+        //hasDoubleJump = true;
+        //isDashing = false;
         jumpReady = true;      
+        dashTimer = maxDashLength;
     }
 
     void Update()
@@ -78,7 +88,6 @@ public class PlayerMove : MonoBehaviour {
             else if (!movingRight)
                 anim.SetBool("DashingLeft", true);
         }
-            
 
         if (dashTimer >= maxDashLength && !dashComplete)
             EndDash();
@@ -98,7 +107,6 @@ public class PlayerMove : MonoBehaviour {
         else if (!movingRight)
         {          
             transform.localScale = flippedScaleX;
-            Debug.Log("REE");
         }
 
 
@@ -111,15 +119,11 @@ public class PlayerMove : MonoBehaviour {
                 {
                     h = 1;
                     movingRight = true;                   
-                   // weaponCollider.offset = new Vector2(0.61f, 0);
-                   // attackEffect.transform.position = new Vector2(weaponCollider.transform.position.x + 0.612f, weaponCollider.transform.position.y);
                 }
                 else if (h < 0)
                 {
                     h = -1;
                     movingRight = false;
-                   // weaponCollider.offset = new Vector2(-0.61f, 0f);
-                   // attackEffect.transform.position = new Vector2(weaponCollider.transform.position.x - 0.612f, weaponCollider.transform.position.y);
                 }
                 rb.velocity = new Vector2(h * speed, rb.velocity.y);
             }
@@ -186,8 +190,6 @@ public class PlayerMove : MonoBehaviour {
         {
             lessGravityTime = 0f;
             rb.velocity = new Vector2(rb.velocity.x, jumpSpeed);
-           // isJumping = true;
-           // isGrounded = false;
         }              
     }
 
