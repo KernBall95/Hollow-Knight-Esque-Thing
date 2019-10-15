@@ -11,33 +11,51 @@ public class CameraFollow : MonoBehaviour {
     public Collider2D boundingBox;
 
     private Vector3 newPos;
-    private float minPos;   
-    private float maxPos;
+    private float minPosX;   
+    private float maxPosX;
+    private float minPosY;
+    private float maxPosY;
+    private float newPosX;
+    private float newPosY;
     private float halfHeight;
     private float halfWidth;
 
     void Start()
     {
-        transform.position = target.transform.position;
+        if(target != null)
+            transform.position = target.transform.position;
 
         halfHeight = Camera.main.orthographicSize;
         halfWidth = Camera.main.aspect * halfHeight;
 
-        minPos = boundingBox.bounds.min.x + halfWidth;
-        maxPos = boundingBox.bounds.max.x - halfWidth;
-        
+        minPosX = boundingBox.bounds.min.x + halfWidth;
+        maxPosX = boundingBox.bounds.max.x - halfWidth;
+        minPosY = boundingBox.bounds.min.y + halfHeight;
+        maxPosY = boundingBox.bounds.max.y - halfHeight;
     }
 
-	void FixedUpdate () {
-        newPos = new Vector3(PlayerBase.Instance.transform.position.x, PlayerBase.Instance.transform.position.y + yOffset, distFromPlayer);
+	void Update () {
+        if(PlayerBase.Instance != null)
+        {
+            newPos = new Vector3(PlayerBase.Instance.transform.position.x, PlayerBase.Instance.transform.position.y + yOffset, distFromPlayer);
+            newPosX = newPos.x;
+            newPosY = newPos.y;
 
-        if (newPos.x < minPos)
-            newPos = new Vector3(minPos, PlayerBase.Instance.transform.position.y + yOffset, distFromPlayer);
-        else if(newPos.x > maxPos)
-            newPos = new Vector3(maxPos, PlayerBase.Instance.transform.position.y + yOffset, distFromPlayer);
-            
+            if (newPos.x < minPosX)
+                newPosX = minPosX;
 
-        transform.position = Vector3.Slerp(transform.position, newPos, speed * Time.deltaTime);
-        
-	}
+            if (newPos.x > maxPosX)
+                newPosX = maxPosX;
+
+            if (newPos.y < minPosY)
+                newPosY = minPosY;
+
+            if (newPos.y > maxPosY)
+                newPosY = maxPosY;
+
+            newPos = new Vector3(newPosX, newPosY, distFromPlayer);
+
+            transform.position = Vector3.Lerp(transform.position, newPos, speed * Time.deltaTime);
+        }
+    }
 }

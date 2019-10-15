@@ -10,6 +10,8 @@ public class PlayerBase : MonoBehaviour {
     public float maxDashLength = 0.4f;
     public float maxDashCooldown = 0.75f;
     public bool isGrounded;
+    [HideInInspector]public int currentHealth;
+    public int maxHealth;
 
     private Rigidbody2D rb;
     private Animator anim;
@@ -43,10 +45,15 @@ public class PlayerBase : MonoBehaviour {
         }
     }
 
-    void Start()
+    void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
         anim = GetComponent<Animator>();
+    }
+
+    void Start()
+    {
+        currentHealth = maxHealth;
         //hasDoubleJump = true;
         jumpReady = true;      
         dashTimer = maxDashLength;
@@ -63,6 +70,10 @@ public class PlayerBase : MonoBehaviour {
 
         hit = Physics2D.Raycast(transform.position, -transform.up, .9f);
         Debug.DrawLine(transform.position, transform.position - (transform.up * .4f), Color.red);
+
+        if (currentHealth <= 0)
+            Die();
+
         if (hit.collider != null)
         {
             if (hit.collider.tag == "Floor")
@@ -209,6 +220,16 @@ public class PlayerBase : MonoBehaviour {
         rb.velocity = new Vector2(0, rb.velocity.y);
         dashComplete = true;
         rb.gravityScale = 1;
+    }
+
+    public void TakeDamage(int damage)
+    {
+        currentHealth -= damage;
+    }
+
+    void Die()
+    {
+        Destroy(gameObject);
     }
 
     void OnCollisionEnter2D(Collision2D other)

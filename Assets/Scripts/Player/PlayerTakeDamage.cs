@@ -10,17 +10,19 @@ public class PlayerTakeDamage : MonoBehaviour {
     public float alphaFlickerTime;
     [HideInInspector]public bool isRagdoll;
 
-    private PlayerHealthManager PHM;
+    //private PlayerHealthManager PHM;
     private Rigidbody2D rb;
     private SpriteRenderer sr;
     private Vector2 knockbackDirection;
     private bool isInvuln;
 
-	void Start () {
-        PHM = GetComponent<PlayerHealthManager>();
+
+    void Awake() {
+        //PHM = GetComponent<PlayerHealthManager>();
         rb = GetComponent<Rigidbody2D>();
         sr = GetComponent<SpriteRenderer>();
-
+    }
+    void Start () {        
         isRagdoll = false;
         isInvuln = false;
 	}
@@ -75,11 +77,11 @@ public class PlayerTakeDamage : MonoBehaviour {
         {
             if (!isInvuln)
             {
-                int damage = other.gameObject.GetComponent<EnemyManager>().attackDamage;
+                int damage = other.gameObject.GetComponent<EnemyBase>().attackDamage;
 
                 knockbackDirection = new Vector2(transform.position.x - other.transform.position.x, Vector2.up.y).normalized;
 
-                PHM.currentHealth -= damage;
+                PlayerBase.Instance.TakeDamage(damage);
                 StartCoroutine(KnockbackPlayer());
                 StartCoroutine(TempInvuln());
                 //StartCoroutine(FlashSprite());

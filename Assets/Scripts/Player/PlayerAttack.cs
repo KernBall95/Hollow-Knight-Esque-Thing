@@ -33,8 +33,8 @@ public class PlayerAttack : MonoBehaviour {
 
         if (aHit.hitEnemy && attackActive)
         {
-            CauseDamage(aHit.eManager);
-            if (!aHit.eManager.ignoresKnockback)
+            CauseDamage(aHit.eBase);
+            if (!aHit.eBase.ignoresKnockback)
             {
                 Rigidbody2D enemyRB = aHit.eRB;
                 StartCoroutine(ApplyKnockback(enemyRB));
@@ -48,8 +48,6 @@ public class PlayerAttack : MonoBehaviour {
         attackActive = true;
         attackReady = false;
         attackEffect.enabled = true;
-
-        //yield return new WaitForSeconds(attackTime);
         
         yield return new WaitForSeconds(attackTime);
         attackActive = false;
@@ -59,15 +57,15 @@ public class PlayerAttack : MonoBehaviour {
         attackReady = true;
     }
 
-    void CauseDamage(EnemyManager target)
+    void CauseDamage(EnemyBase target)
     {
-        target.GetComponent<EnemyManager>().TakeDamage(damage);       
+        target.GetComponent<EnemyBase>().TakeDamage(damage);       
     }
 
     IEnumerator ApplyKnockback(Rigidbody2D eRB)
     {
 
-        eRB.GetComponent<EnemyManager>().isRagdoll = true;
+        eRB.GetComponent<EnemyBase>().isRagdoll = true;
         Vector2 knockbackDirection = new Vector2(eRB.transform.position.x - transform.position.x, 0).normalized;
         knockbackDirection.y = 0.25f;
         eRB.AddRelativeForce(knockbackDirection * knockbackStrength, ForceMode2D.Impulse);
@@ -75,6 +73,6 @@ public class PlayerAttack : MonoBehaviour {
         yield return new WaitForSeconds(0.25f);
         
         if(eRB != null)
-            eRB.GetComponent<EnemyManager>().isRagdoll = false;
+            eRB.GetComponent<EnemyBase>().isRagdoll = false;
     }
 }
