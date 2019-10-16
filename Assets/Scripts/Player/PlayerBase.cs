@@ -2,17 +2,18 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class PlayerBase : MonoBehaviour {
-
+[RequireComponent(typeof(Rigidbody2D),typeof(Animator), typeof(PlayerTakeDamage))]
+public class PlayerBase : MonoBehaviour
+{
+    [HideInInspector] public int currentHealth;
+    public int maxHealth;   
     public float speed;
     public float jumpSpeed;
     public float dashSpeed;
     public float maxDashLength = 0.4f;
     public float maxDashCooldown = 0.75f;
-    public bool isGrounded;
-    [HideInInspector]public int currentHealth;
-    public int maxHealth;
-
+    public bool isGrounded;   
+    
     private Rigidbody2D rb;
     private Animator anim;
     private float lessGravityTime;
@@ -25,7 +26,7 @@ public class PlayerBase : MonoBehaviour {
     private bool doubleJumpUsed;
     private bool doubleJumpReady;
     private bool jumpReady;
-    [HideInInspector]public bool isDashing = false;
+    [HideInInspector] public bool isDashing = false;
     private bool dashComplete;
     private bool groundedSinceLastDash;
     private bool isRagdoll;
@@ -54,8 +55,7 @@ public class PlayerBase : MonoBehaviour {
     void Start()
     {
         currentHealth = maxHealth;
-        //hasDoubleJump = true;
-        jumpReady = true;      
+        jumpReady = true;
         dashTimer = maxDashLength;
     }
 
@@ -71,23 +71,28 @@ public class PlayerBase : MonoBehaviour {
         hit = Physics2D.Raycast(transform.position, -transform.up, .9f);
         Debug.DrawLine(transform.position, transform.position - (transform.up * .4f), Color.red);
 
-        if (currentHealth <= 0)
-            Die();
-
         if (hit.collider != null)
         {
             if (hit.collider.tag == "Floor")
+            {
                 isGrounded = true;
+                isJumping = false;
+                doubleJumpUsed = false;
+                //anim.SetBool("doubleJump", false);
+            }
         }
         else
+        {
             isGrounded = false;
-             
+            isJumping = true;
+        }
+
         if (dashTimer >= maxDashLength)
         {
             isDashing = false;
             anim.SetBool("DashingRight", false);
             anim.SetBool("DashingLeft", false);
-        }           
+        }
         else
         {
             isDashing = true;
@@ -107,26 +112,25 @@ public class PlayerBase : MonoBehaviour {
         }
         else if (!isGrounded)
             anim.SetBool("Ground", false);
-                 
+
         if (movingRight)
         {
             transform.localScale = normalScale;
-        }           
+        }
         else if (!movingRight)
-        {          
+        {
             transform.localScale = flippedScaleX;
         }
-
 
         if (!isRagdoll)
         {
             if (h != 0 && !isDashing)
             {
-                 anim.SetBool("isWalking", true);
+                anim.SetBool("isWalking", true);
                 if (h > 0)
                 {
                     h = 1;
-                    movingRight = true;                   
+                    movingRight = true;
                 }
                 else if (h < 0)
                 {
@@ -140,7 +144,7 @@ public class PlayerBase : MonoBehaviour {
                 if (!isDashing)
                     rb.velocity = new Vector2(0, rb.velocity.y);
 
-                   anim.SetBool("isWalking", false);
+                anim.SetBool("isWalking", false);
             }
 
             if (Input.GetButton("Jump") && !isDashing)
@@ -161,17 +165,6 @@ public class PlayerBase : MonoBehaviour {
                     rb.gravityScale = 1;
                 }
             }
-
-            if (Input.GetButtonUp("Jump"))
-            {
-                jumpReady = true;
-                doubleJumpReady = true;
-                rb.gravityScale = 1;
-
-                if (rb.velocity.y > 0)
-                    rb.velocity = new Vector2(rb.velocity.x, 0f);
-            }
-
             if (isDashing)
                 rb.gravityScale = 0;
 
@@ -180,6 +173,15 @@ public class PlayerBase : MonoBehaviour {
                 Dash();
                 currentDashCooldown = maxDashCooldown;
             }
+        }
+        if (Input.GetButtonUp("Jump"))
+        {
+            jumpReady = true;
+            doubleJumpReady = true;
+            rb.gravityScale = 1;
+
+            if (rb.velocity.y > 0)
+                rb.velocity = new Vector2(rb.velocity.x, 0f);
         }
     }
 
@@ -193,25 +195,25 @@ public class PlayerBase : MonoBehaviour {
             rb.gravityScale = 1;
             doubleJumpUsed = true;
         }
-            
+
         if (isGrounded)
         {
             lessGravityTime = 0f;
             rb.velocity = new Vector2(rb.velocity.x, jumpSpeed);
-        }              
+        }
     }
 
     void Dash()
-    {        
+    {
         dashTimer = 0;
         dashComplete = false;
         groundedSinceLastDash = false;
 
-            if (movingRight == true)
-                rb.AddForce(transform.right * dashSpeed, ForceMode2D.Impulse);
-             else if (movingRight == false)
-                rb.AddForce(-transform.right * dashSpeed, ForceMode2D.Impulse);
-            
+        if (movingRight == true)
+            rb.AddForce(transform.right * dashSpeed, ForceMode2D.Impulse);
+        else if (movingRight == false)
+            rb.AddForce(-transform.right * dashSpeed, ForceMode2D.Impulse);
+
         rb.velocity = new Vector2(rb.velocity.x, 0f);
     }
 
@@ -225,27 +227,12 @@ public class PlayerBase : MonoBehaviour {
     public void TakeDamage(int damage)
     {
         currentHealth -= damage;
+        if (currentHealth <= 0)
+            Die();
     }
 
     void Die()
     {
         Destroy(gameObject);
-    }
-
-    void OnCollisionEnter2D(Collision2D other)
-    {
-        if (other.gameObject.tag == "Floor")
-        {
-            isJumping = false;
-            doubleJumpUsed = false;
-            //anim.SetBool("doubleJump", false);
-        }
-    }
-
-    void OnCollisionExit2D(Collision2D other)
-    {
-        if (other.gameObject.tag == "Floor")
-            isJumping = true;
-                   
     }
 }

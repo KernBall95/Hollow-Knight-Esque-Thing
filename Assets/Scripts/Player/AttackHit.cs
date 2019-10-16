@@ -15,11 +15,10 @@ public class AttackHit : MonoBehaviour
             hitEnemy = true;
             eBase = other.GetComponent<EnemyBase>();
             eRB = other.GetComponent<Rigidbody2D>();
-        }
-            
+        }           
     }
 
-    private void OnTriggerExit2D(Collider2D other)
+    void OnTriggerExit2D(Collider2D other)
     {
         if(other.gameObject.tag == "Enemy")
         {

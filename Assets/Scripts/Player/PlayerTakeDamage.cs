@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+[RequireComponent(typeof(Rigidbody2D), typeof(SpriteRenderer))]
 public class PlayerTakeDamage : MonoBehaviour {
 
     public float knockbackStrength;
@@ -10,7 +11,6 @@ public class PlayerTakeDamage : MonoBehaviour {
     public float alphaFlickerTime;
     [HideInInspector]public bool isRagdoll;
 
-    //private PlayerHealthManager PHM;
     private Rigidbody2D rb;
     private SpriteRenderer sr;
     private Vector2 knockbackDirection;
@@ -18,7 +18,6 @@ public class PlayerTakeDamage : MonoBehaviour {
 
 
     void Awake() {
-        //PHM = GetComponent<PlayerHealthManager>();
         rb = GetComponent<Rigidbody2D>();
         sr = GetComponent<SpriteRenderer>();
     }
