@@ -78,12 +78,15 @@ public class PlayerTakeDamage : MonoBehaviour {
             {
                 int damage = other.gameObject.GetComponent<EnemyBase>().attackDamage;
 
-                knockbackDirection = new Vector2(transform.position.x - other.transform.position.x, Vector2.up.y).normalized;
+                knockbackDirection = new Vector2(transform.position.x - other.transform.position.x, Vector2.up.y).normalized;                
 
-                PlayerBase.Instance.TakeDamage(damage);
-                StartCoroutine(KnockbackPlayer());
-                StartCoroutine(TempInvuln());
-                //StartCoroutine(FlashSprite());
+                if(PlayerBase.Instance.currentHealth > 1)
+                {
+                    StartCoroutine(KnockbackPlayer());
+                    StartCoroutine(TempInvuln());
+                    //StartCoroutine(FlashSprite());
+                }
+                PlayerBase.Instance.TakeDamage(damage);                
             }          
         }
     }

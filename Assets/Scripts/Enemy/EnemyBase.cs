@@ -131,7 +131,6 @@ public class EnemyBase : MonoBehaviour {
     {
         while (isRagdoll == true)
         {
-            Debug.Log("Flicker");
             if (currentFlickerColour == "White")
             {
                 sr.color = new Color(255f, 0f, 0f, 255f);

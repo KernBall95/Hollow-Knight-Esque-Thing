@@ -33,7 +33,9 @@ public class PlayerBase : MonoBehaviour
     private bool movingRight = true;
     private Vector3 normalScale = new Vector3(0.1f, 0.1f, 1f);
     private Vector3 flippedScaleX = new Vector3(-0.1f, 0.1f, 1f);
+    [SerializeField] private GameObject startUp;
     private RaycastHit2D hit;
+    private float groundedRayXOffset = 0.29f;
 
     private static PlayerBase instance;
     public static PlayerBase Instance
@@ -68,8 +70,19 @@ public class PlayerBase : MonoBehaviour
         dashTimer += Time.deltaTime;
         lessGravityTime += Time.deltaTime;
 
-        hit = Physics2D.Raycast(transform.position, -transform.up, .9f);
-        Debug.DrawLine(transform.position, transform.position - (transform.up * .4f), Color.red);
+        if (movingRight)
+        {
+            transform.localScale = normalScale;
+            groundedRayXOffset = 0.29f;
+        }
+        else if (!movingRight)
+        {
+            transform.localScale = flippedScaleX;
+            groundedRayXOffset = -0.29f;
+        }
+
+        hit = Physics2D.Raycast(new Vector3(transform.position.x - groundedRayXOffset, transform.position.y, transform.position.z), -transform.up, .9f);
+        Debug.DrawLine(new Vector2(transform.position.x - groundedRayXOffset, transform.position.y), new Vector3(transform.position.x - groundedRayXOffset, transform.position.y, transform.position.z) - (transform.up * .4f), Color.red);
 
         if (hit.collider != null)
         {
@@ -113,14 +126,7 @@ public class PlayerBase : MonoBehaviour
         else if (!isGrounded)
             anim.SetBool("Ground", false);
 
-        if (movingRight)
-        {
-            transform.localScale = normalScale;
-        }
-        else if (!movingRight)
-        {
-            transform.localScale = flippedScaleX;
-        }
+        
 
         if (!isRagdoll)
         {
@@ -168,10 +174,13 @@ public class PlayerBase : MonoBehaviour
             if (isDashing)
                 rb.gravityScale = 0;
 
-            if (Input.GetAxis("RightTrigger") > 0.1 && currentDashCooldown < 0f && groundedSinceLastDash)
+            if (anim.GetBool("Attacking") == false)
             {
-                Dash();
-                currentDashCooldown = maxDashCooldown;
+                if (Input.GetAxis("RightTrigger") > 0.1 && currentDashCooldown < 0f && groundedSinceLastDash)
+                {
+                    Dash();
+                    currentDashCooldown = maxDashCooldown;
+                }
             }
         }
         if (Input.GetButtonUp("Jump"))
@@ -228,11 +237,16 @@ public class PlayerBase : MonoBehaviour
     {
         currentHealth -= damage;
         if (currentHealth <= 0)
-            Die();
+            DieAndRespawn();
     }
 
-    void Die()
+    void DieAndRespawn()
     {
-        Destroy(gameObject);
+        isRagdoll = false;
+        rb.velocity = Vector2.zero;
+        startUp.gameObject.tag = "Startup";
+        GameManager.Instance.ReloadScene();       
+        transform.position = GameObject.Find("PlayerStartPosition").transform.position;              
+        currentHealth = maxHealth;
     }
 }

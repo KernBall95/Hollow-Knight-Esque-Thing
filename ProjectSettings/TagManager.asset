@@ -8,6 +8,7 @@ TagManager:
   - Floor
   - Enemy
   - Weapon
+  - Startup
   layers:
   - Default
   - TransparentFX

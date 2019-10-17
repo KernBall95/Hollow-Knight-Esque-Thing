@@ -12,8 +12,8 @@ public class PlayerAttack : MonoBehaviour {
     public float shakeAmount;
     public float shakeLength;
 
-    private float attackCooldown = 0.35f;
-    private float attackTime = 0.19f;
+    private float attackCooldown = 0.4f;
+    private float attackTime = 0.2f;
     private bool attackReady;
     private bool attackActive;
     private Animator anim;

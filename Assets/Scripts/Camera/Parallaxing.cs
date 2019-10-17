@@ -28,6 +28,14 @@ public class Parallaxing : MonoBehaviour {
 	}
 	
 	void Update () {
+        if (cam != null)
+            UpdateParallax();
+        else
+            Debug.LogError("Parallax script is missing its camera!");
+    }
+
+    void UpdateParallax()
+    {
         for (int i = 0; i < scenery.Length; i++)
         {
             float parallax = (previousCamPos.x - cam.position.x) * parallaxScales[i];
@@ -38,5 +46,17 @@ public class Parallaxing : MonoBehaviour {
         }
         previousCamPos = cam.position;
         sky.position = new Vector3(cam.position.x, sky.position.y, sky.position.z);
+    }
+
+    public void Reset()
+    {
+        cam = Camera.main.transform;
+
+        for (int i = 0; i < scenery.Length; i++)
+        {
+            scenery[i] = GameObject.Find("Background Mountains " + (i + 1)).transform;
+            sky = GameObject.Find("Sky").transform;
+            Debug.Log(cam.GetInstanceID());
+        }       
     }
 }
