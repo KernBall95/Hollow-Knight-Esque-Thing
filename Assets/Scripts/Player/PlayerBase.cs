@@ -12,30 +12,34 @@ public class PlayerBase : MonoBehaviour
     public float dashSpeed;
     public float maxDashLength = 0.4f;
     public float maxDashCooldown = 0.75f;
-    public bool isGrounded;   
-    
-    private Rigidbody2D rb;
-    private Animator anim;
+    public bool isGrounded;  
+    public int currentCash;
+    public Animator anim;
+    [HideInInspector] public bool isDashing = true;
+    [HideInInspector] public float h;
+    [HideInInspector] public float v;
+    [HideInInspector] public Rigidbody2D rb;
+  
     private float lessGravityTime;
-    private float maxLessGravityTime = 0.4f;
-    private float h;
+    private float maxLessGravityTime = 0.4f;  
     private float currentDashCooldown = 0f;
     private float dashTimer;
-    private bool isJumping;
+    private bool isJumping = true;
     private bool hasDoubleJump = true;
     private bool doubleJumpUsed;
     private bool doubleJumpReady;
-    private bool jumpReady;
-    [HideInInspector] public bool isDashing = false;
+    private bool jumpReady;   
     private bool dashComplete;
     private bool groundedSinceLastDash;
     private bool isRagdoll;
-    private bool movingRight = true;
+    public bool movingRight = true;
     private Vector3 normalScale = new Vector3(0.1f, 0.1f, 1f);
     private Vector3 flippedScaleX = new Vector3(-0.1f, 0.1f, 1f);
     [SerializeField] private GameObject startUp;
-    private RaycastHit2D hit;
+    private RaycastHit2D hitBack;
+    private RaycastHit2D hitFront;
     private float groundedRayXOffset = 0.29f;
+    private CapsuleCollider2D col;
 
     private static PlayerBase instance;
     public static PlayerBase Instance
@@ -52,6 +56,7 @@ public class PlayerBase : MonoBehaviour
     {
         rb = GetComponent<Rigidbody2D>();
         anim = GetComponent<Animator>();
+        col = GetComponent<CapsuleCollider2D>();
     }
 
     void Start()
@@ -59,48 +64,66 @@ public class PlayerBase : MonoBehaviour
         currentHealth = maxHealth;
         jumpReady = true;
         dashTimer = maxDashLength;
+        currentCash = 0;
     }
 
     void Update()
     {
-        isRagdoll = GetComponent<PlayerTakeDamage>().isRagdoll;
+        if(isRagdoll != GetComponent<PlayerTakeDamage>().isRagdoll)
+            isRagdoll = GetComponent<PlayerTakeDamage>().isRagdoll;
+
         h = Input.GetAxis("Horizontal");
+        v = Input.GetAxis("Vertical");
 
         currentDashCooldown -= Time.deltaTime;
         dashTimer += Time.deltaTime;
         lessGravityTime += Time.deltaTime;
 
-        if (movingRight)
+        hitBack = Physics2D.Raycast(new Vector3(transform.position.x - groundedRayXOffset, transform.position.y, transform.position.z), -transform.up, .9f);
+        hitFront = Physics2D.Raycast(new Vector3(transform.position.x + groundedRayXOffset, transform.position.y, transform.position.z), -transform.up, .9f);
+        //Debug.DrawLine(new Vector2(transform.position.x - groundedRayXOffset, transform.position.y), new Vector3(transform.position.x - groundedRayXOffset, transform.position.y, transform.position.z) - (transform.up * .4f), Color.red);
+        //Debug.DrawLine(new Vector2(transform.position.x + groundedRayXOffset, transform.position.y), new Vector3(transform.position.x + groundedRayXOffset, transform.position.y, transform.position.z) - (transform.up * .4f), Color.red);
+
+        if (hitBack.collider != null)
+        {
+            if (hitBack.collider.tag == "Floor" && isGrounded == false) 
+                isGrounded = true;
+        }
+        else if(hitFront.collider != null)
+        {
+            if (hitFront.collider.tag == "Floor" && isGrounded == false)
+                isGrounded = true;
+        }
+        else
+            isGrounded = false;
+        
+        if (isGrounded && isJumping == true)
+        {
+            groundedSinceLastDash = true;
+            anim.SetBool("Ground", true);
+            isJumping = false;
+            doubleJumpUsed = false;
+            col.sharedMaterial.friction = 0.4f;
+        }
+        else if (!isGrounded && isJumping == false)
+        {
+            isJumping = true;
+            anim.SetBool("Ground", false);
+            col.sharedMaterial.friction = 0f;
+        }
+            
+        if (movingRight && transform.localScale != normalScale)
         {
             transform.localScale = normalScale;
             groundedRayXOffset = 0.29f;
         }
-        else if (!movingRight)
+        else if (!movingRight && transform.localScale != flippedScaleX)
         {
             transform.localScale = flippedScaleX;
             groundedRayXOffset = -0.29f;
-        }
+        }      
 
-        hit = Physics2D.Raycast(new Vector3(transform.position.x - groundedRayXOffset, transform.position.y, transform.position.z), -transform.up, .9f);
-        Debug.DrawLine(new Vector2(transform.position.x - groundedRayXOffset, transform.position.y), new Vector3(transform.position.x - groundedRayXOffset, transform.position.y, transform.position.z) - (transform.up * .4f), Color.red);
-
-        if (hit.collider != null)
-        {
-            if (hit.collider.tag == "Floor")
-            {
-                isGrounded = true;
-                isJumping = false;
-                doubleJumpUsed = false;
-                //anim.SetBool("doubleJump", false);
-            }
-        }
-        else
-        {
-            isGrounded = false;
-            isJumping = true;
-        }
-
-        if (dashTimer >= maxDashLength)
+        if (dashTimer >= maxDashLength && isDashing == true)
         {
             isDashing = false;
             anim.SetBool("DashingRight", false);
@@ -108,28 +131,22 @@ public class PlayerBase : MonoBehaviour
         }
         else
         {
-            isDashing = true;
-            if (movingRight)
-                anim.SetBool("DashingRight", true);
-            else if (!movingRight)
-                anim.SetBool("DashingLeft", true);
+            if (isDashing == false && dashTimer < maxDashLength)
+            {
+                isDashing = true;
+                if (movingRight)
+                    anim.SetBool("DashingRight", true);
+                else if (!movingRight)
+                    anim.SetBool("DashingLeft", true);
+            }
         }
 
         if (dashTimer >= maxDashLength && !dashComplete)
             EndDash();
 
-        if (isGrounded)
-        {
-            groundedSinceLastDash = true;
-            anim.SetBool("Ground", true);
-        }
-        else if (!isGrounded)
-            anim.SetBool("Ground", false);
-
-        
-
         if (!isRagdoll)
         {
+            anim.SetBool("Ragdoll", false);
             if (h != 0 && !isDashing)
             {
                 anim.SetBool("isWalking", true);
@@ -183,6 +200,9 @@ public class PlayerBase : MonoBehaviour
                 }
             }
         }
+        else
+            anim.SetBool("Ragdoll", true);
+
         if (Input.GetButtonUp("Jump"))
         {
             jumpReady = true;
@@ -245,7 +265,7 @@ public class PlayerBase : MonoBehaviour
         isRagdoll = false;
         rb.velocity = Vector2.zero;
         startUp.gameObject.tag = "Startup";
-        GameManager.Instance.ReloadScene();       
+        StartCoroutine(GameManager.Instance.ReloadScene());       
         transform.position = GameObject.Find("PlayerStartPosition").transform.position;              
         currentHealth = maxHealth;
     }

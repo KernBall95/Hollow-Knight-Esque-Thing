@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using Cinemachine;
+
 using UnityEngine.Experimental.Rendering.LWRP;
 
 [RequireComponent(typeof(Animator))]
@@ -9,18 +9,17 @@ public class PlayerAttack : MonoBehaviour {
 
     public int damage;
     public float knockbackStrength;
-    public float shakeAmount;
-    public float shakeLength;
 
-    private float attackCooldown = 0.4f;
-    private float attackTime = 0.2f;
+    private float attackCooldown = 0.35f;
+    private float attackTime = 0.1f;
     private bool attackReady;
-    private bool attackActive;
+    public bool attackActive;
     private Animator anim;
     private SpriteRenderer attackEffect;
     private AttackHit aHit;
-    private CinemachineVirtualCamera vCam;
-    private CinemachineBasicMultiChannelPerlin noise;
+    private Transform weapon;
+    private CameraEffects camEffects;
+    
     Light2D light2D;
 
     void Awake()
@@ -28,15 +27,17 @@ public class PlayerAttack : MonoBehaviour {
         anim = GetComponent<Animator>();
         aHit = GetComponentInChildren<AttackHit>();
         attackEffect = aHit.GetComponent<SpriteRenderer>();
-        vCam = GameObject.Find("CM vcam1").GetComponent<CinemachineVirtualCamera>();
-        noise = vCam.GetCinemachineComponent<CinemachineBasicMultiChannelPerlin>();
+        weapon = transform.Find("Player Attack Effect");        
         light2D = attackEffect.GetComponentInChildren<Light2D>();
     }
     void Start () {
+        camEffects = GameManager.Instance.camEffects;
+
         attackEffect.enabled = false;
         light2D.enabled = false;
         attackReady = true;
         attackActive = false;
+        weapon.gameObject.SetActive(false);
 	}
 	
 	void Update () {
@@ -51,9 +52,10 @@ public class PlayerAttack : MonoBehaviour {
             if (!aHit.eBase.ignoresKnockback)
             {
                 Rigidbody2D enemyRB = aHit.eRB;
-                StartCoroutine(ApplyKnockback(enemyRB));
+                StartCoroutine(ApplyKnockbackToEnemy(enemyRB));
             }
-            CauseDamage(aHit.eBase);           
+            CauseDamage(aHit.eBase);
+            GameManager.Instance.audio.Play();
             attackActive = false;
         }           
     }
@@ -61,6 +63,7 @@ public class PlayerAttack : MonoBehaviour {
     IEnumerator Attack()
     {
         attackActive = true;
+        weapon.gameObject.SetActive(true);
         attackReady = false;
         attackEffect.enabled = true;
         light2D.enabled = true;
@@ -68,6 +71,7 @@ public class PlayerAttack : MonoBehaviour {
         yield return new WaitForSeconds(attackTime);
 
         attackActive = false;
+        weapon.gameObject.SetActive(false);
         anim.SetBool("Attacking", false);
         attackEffect.enabled = false;
         light2D.enabled = false;
@@ -80,10 +84,11 @@ public class PlayerAttack : MonoBehaviour {
     void CauseDamage(EnemyBase target)
     {
         target.GetComponent<EnemyBase>().TakeDamage(damage);
-        StartCoroutine(CameraShake(shakeAmount, shakeLength));
+        ApplyKnockbackToPlayer();
+        StartCoroutine(camEffects.CameraShake(camEffects.enemyHitAmpGain, camEffects.enemyHitShakeIntensity, camEffects.enemyHitShakeLength));      
     }
 
-    IEnumerator ApplyKnockback(Rigidbody2D eRB)
+    IEnumerator ApplyKnockbackToEnemy(Rigidbody2D eRB)
     {
         eRB.GetComponent<EnemyBase>().isRagdoll = true;
         Vector2 knockbackDirection = new Vector2(eRB.transform.position.x - transform.position.x, 0).normalized;
@@ -96,16 +101,12 @@ public class PlayerAttack : MonoBehaviour {
             eRB.GetComponent<EnemyBase>().isRagdoll = false;
     }
 
-    IEnumerator CameraShake(float shakeIntensity, float shakeTiming)
+    void ApplyKnockbackToPlayer()
     {
-        Noise(1, shakeIntensity);
-        yield return new WaitForSeconds(shakeTiming);
-        Noise(0, 0);
-    }
-
-    void Noise(float amplitudeGain, float frequencyGain)
-    {
-        noise.m_AmplitudeGain = amplitudeGain;
-        noise.m_FrequencyGain = frequencyGain;
+        if(GetComponentInChildren<UpdateWeaponColliderPos>().downwardAttack == true)
+        {
+            PlayerBase.Instance.rb.velocity = Vector2.zero;
+            PlayerBase.Instance.rb.AddForce(knockbackStrength/2 * transform.up, ForceMode2D.Impulse);
+        }
     }
 }

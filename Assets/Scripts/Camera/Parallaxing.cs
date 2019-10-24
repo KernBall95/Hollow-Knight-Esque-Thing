@@ -3,46 +3,59 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class Parallaxing : MonoBehaviour {
-
-    public Transform[] scenery;
-    public Transform sky;
+    
     public float smoothing = 1f;
 
+    //[SerializeField] private Transform[] sceneryArray;
+    [SerializeField] private List<Transform> sceneryList = new List<Transform>();
     private float[] parallaxScales;
     private Transform cam;
-    private Vector3 previousCamPos;
+    private Vector3 previousCamPos;  
+    private Transform sky;
+    private GameObject sceneryParent;
 
     void Awake()
     {
         cam = Camera.main.transform;
+        sceneryParent = GameObject.Find("MovingScenery");
+        sky = GameObject.Find("Sky").transform;
     }
 
 	void Start () {
-        previousCamPos = cam.position;
-        parallaxScales = new float[scenery.Length];
-
-        for(int i = 0; i < scenery.Length; i++)
+        foreach (Transform child in sceneryParent.transform)
         {
-            parallaxScales[i] = scenery[i].position.z * -1;
+            sceneryList.Add(child);
         }
+
+        previousCamPos = cam.position;
+        parallaxScales = new float[sceneryList.Count];
+
+        for(int i = 0; i < sceneryList.Count - 1; i++)
+        {
+            parallaxScales[i] = sceneryList[i].position.z * -1;
+        }      
 	}
 	
 	void Update () {
         if (cam != null)
-            UpdateParallax();
+        {
+            if (cam.position != previousCamPos)
+                UpdateParallax();
+        }
         else
             Debug.LogError("Parallax script is missing its camera!");
+            
     }
 
     void UpdateParallax()
     {
-        for (int i = 0; i < scenery.Length; i++)
+        for (int i = 0; i < sceneryList.Count - 1; i++)
         {
             float parallax = (previousCamPos.x - cam.position.x) * parallaxScales[i];
-            float sceneryTargetPosX = scenery[i].position.x + parallax;
-            Vector3 sceneryTargetPos = new Vector3(sceneryTargetPosX, scenery[i].position.y, scenery[i].position.z);
+            float sceneryTargetPosX = sceneryList[i].position.x + parallax;
+            Vector3 sceneryTargetPos = new Vector3(sceneryTargetPosX, sceneryList[i].position.y, sceneryList[i].position.z);
 
-            scenery[i].position = Vector3.Lerp(scenery[i].position, sceneryTargetPos, smoothing * Time.deltaTime);
+            sceneryList[i].position = Vector3.Lerp(sceneryList[i].position, sceneryTargetPos, smoothing * Time.fixedDeltaTime);
         }
         previousCamPos = cam.position;
         sky.position = new Vector3(cam.position.x, sky.position.y, sky.position.z);
@@ -51,12 +64,14 @@ public class Parallaxing : MonoBehaviour {
     public void Reset()
     {
         cam = Camera.main.transform;
+        sceneryParent = GameObject.Find("MovingScenery");
+        sky = GameObject.Find("Sky").transform;
 
-        for (int i = 0; i < scenery.Length; i++)
+        sceneryList.Clear();
+
+        foreach (Transform child in sceneryParent.transform)
         {
-            scenery[i] = GameObject.Find("Background Mountains " + (i + 1)).transform;
-            sky = GameObject.Find("Sky").transform;
-            Debug.Log(cam.GetInstanceID());
+            sceneryList.Add(child);
         }       
     }
 }

@@ -8,22 +8,33 @@ public class PlayerTakeDamage : MonoBehaviour {
     public float knockbackStrength;
     public float knockbackTime;
     public float invulnTime;
-    public float alphaFlickerTime;
+    public float flickerTime;
     [HideInInspector]public bool isRagdoll;
 
     private Rigidbody2D rb;
-    private SpriteRenderer sr;
+    public List<SpriteRenderer> sr = new List<SpriteRenderer>();
     private Vector2 knockbackDirection;
     private bool isInvuln;
+    private float currentAlpha;
+    private CameraEffects camEffects;
 
 
     void Awake() {
         rb = GetComponent<Rigidbody2D>();
-        sr = GetComponent<SpriteRenderer>();
+        
     }
-    void Start () {        
+    void Start () {
+        camEffects = GameManager.Instance.camEffects;
+
         isRagdoll = false;
         isInvuln = false;
+        currentAlpha = 1;
+
+        foreach(Transform child in transform)
+        {
+            if (child.GetComponent<SpriteRenderer>() != null)
+                sr.Add(child.GetComponent<SpriteRenderer>());
+        }
 	}
 
     IEnumerator KnockbackPlayer()
@@ -40,35 +51,39 @@ public class PlayerTakeDamage : MonoBehaviour {
     IEnumerator TempInvuln()
     {
         isInvuln = true;
-        Physics2D.IgnoreLayerCollision(9, 11, true);
 
         yield return new WaitForSeconds(invulnTime);
 
-        Physics2D.IgnoreLayerCollision(9, 11, false);
         isInvuln = false;
     }
 
-    /*IEnumerator FlashSprite()
+    IEnumerator FlashSprite()
     {
         while (isInvuln)
         {
-            if (alphaHigh)
+            if (currentAlpha == 1f)
             {
-                sr.color = new Color(1f, 1f, 1f, 0.4f);
-                alphaHigh = false;
-                alphaLow = true;
-                yield return new WaitForSeconds(alphaFlickerTime);
+                currentAlpha = 0.5f;
+                for(int i = 0; i < sr.Count; i++)
+                {
+                    sr[i].color = new Color(sr[i].color.r, sr[i].color.g, sr[i].color.b, currentAlpha);
+                }
+                //sr.color = new Color(1f, 1f, 1f, 0.4f);
+                yield return new WaitForSeconds(flickerTime);
             }
-            else if (alphaLow)
+            else if (currentAlpha == 0.5f)
             {
-                sr.color = new Color(1f, 1f, 1f, 1f);
-                alphaLow = false;
-                alphaHigh = true;
-                yield return new WaitForSeconds(alphaFlickerTime);
+                currentAlpha = 1f;
+                for(int i = 0; i < sr.Count; i++)
+                {
+                    sr[i].color = new Color(sr[i].color.r, sr[i].color.g, sr[i].color.b, currentAlpha);
+                }              
+                yield return new WaitForSeconds(flickerTime);
             }                              
         }
-        sr.color = new Color(1f, 1f, 1f, 1f);
-    }*/
+        for(int i = 0; i < sr.Count;i++)
+            sr[i].color = new Color(sr[i].color.r, sr[i].color.g, sr[i].color.b, 1);
+    }
 
     void OnCollisionEnter2D(Collision2D other)
     {
@@ -84,7 +99,8 @@ public class PlayerTakeDamage : MonoBehaviour {
                 {
                     StartCoroutine(KnockbackPlayer());
                     StartCoroutine(TempInvuln());
-                    //StartCoroutine(FlashSprite());
+                    StartCoroutine(camEffects.CameraShake(camEffects.playerHitAmpGain, camEffects.playerHitShakeIntensity, camEffects.playerHitShakeLength));
+                    StartCoroutine(FlashSprite());
                 }
                 PlayerBase.Instance.TakeDamage(damage);                
             }          

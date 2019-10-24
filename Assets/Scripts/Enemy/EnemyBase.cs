@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-[RequireComponent(typeof(Rigidbody2D), typeof(SpriteRenderer))]
+[RequireComponent(typeof(Rigidbody2D))]
 public class EnemyBase : MonoBehaviour {
 
     [SerializeField] enum EnemyType { Patrol, Follow };
@@ -15,6 +15,10 @@ public class EnemyBase : MonoBehaviour {
     public float jumpForce;
     public bool movingRight = true;
     public bool isRagdoll;
+    public GameObject coin;
+    public int coinDropAmount;
+    public GameObject hitParticles;
+    public LayerMask layerMask;
 
     private int currentHealth;   
     private Rigidbody2D rb;
@@ -26,6 +30,8 @@ public class EnemyBase : MonoBehaviour {
     private bool followingPlayer;
     private float flickerTime = 0.1f;
     private string currentFlickerColour = "Red";
+    private Vector3 normalScale = new Vector3(0.1f, 0.1f, 0.1f);
+    private Vector3 flippedScale = new Vector3(-0.1f, 0.1f, 0.1f);
 
     void Awake() {
         rb = GetComponent<Rigidbody2D>();
@@ -35,10 +41,11 @@ public class EnemyBase : MonoBehaviour {
         currentHealth = maxHealth;
         flipReady = true;
         rayOffsetX = 0.8f;
-        rayOffsetY = -0.4f;
+        rayOffsetY = -0.1f;
 	}
 	
-	void Update () {
+	void FixedUpdate () {
+
         distanceToTarget = Vector2.Distance(PlayerBase.Instance.transform.position, transform.position);
         
         if (!isRagdoll){
@@ -51,29 +58,37 @@ public class EnemyBase : MonoBehaviour {
             }
 
             if (movingRight)
+            {
+                transform.localScale  = normalScale;
                 rb.AddForce(transform.right.normalized * moveSpeed);
+            }
+                
             else if (!movingRight)
+            {
+                transform.localScale = flippedScale;
                 rb.AddForce(-transform.right.normalized * moveSpeed);
+            }
+                
 
-            hitRight = Physics2D.Raycast(new Vector2(transform.position.x + (rayOffsetX / 2), transform.position.y), transform.right, .6f);
-            hitLeft = Physics2D.Raycast(new Vector2(transform.position.x - (rayOffsetX / 2), transform.position.y), -transform.right, .6f);
-            hitRightDown = Physics2D.Raycast(new Vector2(transform.position.x + rayOffsetX, transform.position.y + rayOffsetY), -transform.up, .4f);
-            hitLeftDown = Physics2D.Raycast(new Vector2(transform.position.x - rayOffsetX, transform.position.y + rayOffsetY), -transform.up, .4f);
+            hitRight = Physics2D.Raycast(new Vector2(transform.position.x + (rayOffsetX / 6), transform.position.y), transform.right, .6f, layerMask);
+            hitLeft = Physics2D.Raycast(new Vector2(transform.position.x - (rayOffsetX / 6), transform.position.y), -transform.right, .6f, layerMask);
+            hitRightDown = Physics2D.Raycast(new Vector2(transform.position.x + rayOffsetX, transform.position.y + rayOffsetY), -transform.up, .4f, layerMask);
+            hitLeftDown = Physics2D.Raycast(new Vector2(transform.position.x - rayOffsetX, transform.position.y + rayOffsetY), -transform.up, .4f, layerMask);
 
-            Debug.DrawLine(new Vector2(transform.position.x + (rayOffsetX / 2), transform.position.y), new Vector2(transform.position.x + rayOffsetX + 0.6f, transform.position.y), Color.red);
-            Debug.DrawLine(new Vector2(transform.position.x - (rayOffsetX / 2), transform.position.y), new Vector2(transform.position.x - rayOffsetX - 0.6f, transform.position.y), Color.red);
+            Debug.DrawLine(new Vector2(transform.position.x + (rayOffsetX / 6), transform.position.y), new Vector2(transform.position.x + rayOffsetX + 0.6f, transform.position.y), Color.red);
+            Debug.DrawLine(new Vector2(transform.position.x - (rayOffsetX / 6), transform.position.y), new Vector2(transform.position.x - rayOffsetX - 0.6f, transform.position.y), Color.red);
             Debug.DrawLine(new Vector2(transform.position.x + rayOffsetX, transform.position.y + rayOffsetY), new Vector2(transform.position.x + rayOffsetX, transform.position.y + rayOffsetY - 0.4f), Color.red);
             Debug.DrawLine(new Vector2(transform.position.x - rayOffsetX, transform.position.y + rayOffsetY), new Vector2(transform.position.x - rayOffsetX, transform.position.y + rayOffsetY - 0.4f), Color.red);
 
             if (flipReady && !followingPlayer)
             {   if (hitRight.collider != null)
                 {
-                    if (hitRight.collider.tag == "Wall" || hitRight.collider.tag == "Floor")
+                    //if (hitRight.collider.tag == "Wall" || hitRight.collider.tag == "Floor")
                         StartCoroutine(FlipDirection());
                 }
                 else if (hitLeft.collider != null)
                 {
-                    if (hitLeft.collider.tag == "Wall" || hitLeft.collider.tag == "Floor")
+                    //if (hitLeft.collider.tag == "Wall" || hitLeft.collider.tag == "Floor")
                         StartCoroutine(FlipDirection());
                 }
                 else if (hitRightDown.collider == null)
@@ -104,12 +119,10 @@ public class EnemyBase : MonoBehaviour {
         followingPlayer = true;
         if (PlayerBase.Instance.transform.position.x > transform.position.x)
         {
-            sr.flipX = false;
             movingRight = true;
         }           
         else if (PlayerBase.Instance.transform.position.x < transform.position.x)
         {
-            sr.flipX = true;
             movingRight = false;
         }
     }
@@ -117,12 +130,6 @@ public class EnemyBase : MonoBehaviour {
     IEnumerator FlipDirection()
     {       
         flipReady = false;
-
-        if (sr.flipX == true)
-            sr.flipX = false;
-        else if (sr.flipX == false)
-            sr.flipX = true;
-
         movingRight = !movingRight;
         yield return new WaitForSeconds(0.5f);
         flipReady = true;
@@ -133,38 +140,45 @@ public class EnemyBase : MonoBehaviour {
         {
             if (currentFlickerColour == "White")
             {
-                sr.color = new Color(255f, 0f, 0f, 255f);
                 currentFlickerColour = "Red";
 
                 yield return new WaitForSeconds(flickerTime);
             }
             else if (currentFlickerColour == "Red")
             {
-                sr.color = new Color(255f, 255f, 255f, 255f);
                 currentFlickerColour = "White";
 
                 yield return new WaitForSeconds(flickerTime);
             }
         }      
-        sr.color = new Color(255f, 0f, 0f, 255f);
     }
 
     public void TakeDamage(int damage)
     {
         currentHealth -= damage;
         if (currentHealth <= 0)
-            Die();
+            StartCoroutine(Die());
         StartCoroutine(FlickerWhenHit());
     }
 
-    void Die()
+    public void SpawnParticles(Vector3 hitPos)
     {
+        Instantiate(hitParticles, hitPos, Quaternion.identity);
+    }
+
+    IEnumerator Die()
+    {
+        for (int i = 0; i < coinDropAmount; i++)
+        {
+            Instantiate(coin, new Vector3(transform.position.x, transform.position.y, transform.position.z), Quaternion.identity);
+            yield return new WaitForSeconds(0.001f);
+        }
         Destroy(gameObject);
     }
 
-    void OnDrawGizmos()
+    /*void OnDrawGizmos()
     {
         Gizmos.color = Color.yellow;
         Gizmos.DrawWireSphere(transform.position, 5f);
-    }
+    }*/
 }

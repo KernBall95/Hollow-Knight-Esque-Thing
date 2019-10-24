@@ -9,6 +9,8 @@ TagManager:
   - Enemy
   - Weapon
   - Startup
+  - Wall
+  - Money
   layers:
   - Default
   - TransparentFX
@@ -23,7 +25,7 @@ TagManager:
   - Weapon
   - Enemy
   - PostProcessing
-  - 
+  - Money
   - 
   - 
   - 
@@ -49,9 +51,6 @@ TagManager:
   - name: Background
     uniqueID: 3140401967
     locked: 0
-  - name: Floor
+  - name: Playable
     uniqueID: 196908795
-    locked: 0
-  - name: Characters
-    uniqueID: 1177918679
     locked: 0
