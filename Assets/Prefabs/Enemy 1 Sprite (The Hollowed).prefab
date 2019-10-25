@@ -1070,7 +1070,7 @@ MonoBehaviour:
   maxHealth: 5
   attackDamage: 1
   ignoresKnockback: 0
-  moveSpeed: 25
+  moveSpeed: 20
   jumpForce: 3
   movingRight: 0
   isRagdoll: 0

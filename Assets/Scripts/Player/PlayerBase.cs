@@ -40,6 +40,8 @@ public class PlayerBase : MonoBehaviour
     private RaycastHit2D hitFront;
     private float groundedRayXOffset = 0.29f;
     private CapsuleCollider2D col;
+    private bool atLever = false;
+    private Lever lever;
 
     private static PlayerBase instance;
     public static PlayerBase Instance
@@ -199,6 +201,11 @@ public class PlayerBase : MonoBehaviour
                     currentDashCooldown = maxDashCooldown;
                 }
             }
+
+            if (atLever && Input.GetButtonDown("Action"))
+            {
+                lever.isActivated = true;
+            }
         }
         else
             anim.SetBool("Ragdoll", true);
@@ -268,5 +275,17 @@ public class PlayerBase : MonoBehaviour
         StartCoroutine(GameManager.Instance.ReloadScene());       
         transform.position = GameObject.Find("PlayerStartPosition").transform.position;              
         currentHealth = maxHealth;
+    }
+
+    void OnTriggerStay2D(Collider2D other)
+    {
+        if (other.gameObject.tag == "Lever")
+        {
+            atLever = true;
+            lever = other.GetComponent<Lever>();
+        }
+        else
+            atLever = false;
+        
     }
 }

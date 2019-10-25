@@ -6,7 +6,7 @@ public class UpdateWeaponColliderPos : MonoBehaviour
 {
     [HideInInspector] public bool downwardAttack;
 
-    private Vector2 rightPos = new Vector2(5f, 5.4f);
+    private Vector2 rightPos = new Vector2(7f, 5.4f);
     private Vector2 upPos = new Vector2(0f, 13.2f);
     private Vector2 downPos = new Vector2(0f, -6.5f);
 
